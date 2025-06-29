@@ -64,3 +64,17 @@ jobs:
           kubectl apply -f mysqlapp.yaml
           kubectl apply -f flaskapp.yaml
           kubectl apply -f flaskingress.yaml
+
+      - name: Wait for Pods to be Ready
+        run: |
+          kubectl wait --for=condition=ready pod -l app=flaskapp --timeout=120s
+          kubectl wait --for=condition=ready pod -l app=mysql --timeout=120s
+
+      - name: Show Logs for All Pods
+        run: |
+          kubectl get pods
+          for pod in $(kubectl get pods -o jsonpath='{.items[*].metadata.name}'); do
+            echo "=================== Logs for Pod: $pod ==================="
+            kubectl logs "$pod"
+            echo "========================================================="
+          done
