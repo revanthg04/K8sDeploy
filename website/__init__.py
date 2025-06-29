@@ -7,7 +7,7 @@ db = SQLAlchemy()
 def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'createapp'
-    
+
     db_user = os.environ.get('MYSQL_USER', 'root')
     db_password = os.environ.get('MYSQL_PASSWORD', 'my-secret-pw')
     db_host = os.environ.get('MYSQL_HOST', 'localhost')
@@ -41,4 +41,3 @@ def create_app():
 def create_database(app):
     db.create_all(app=app)
     print('Created Database!')
-
