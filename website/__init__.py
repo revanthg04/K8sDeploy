@@ -1,13 +1,19 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-
+import os
 db = SQLAlchemy()
 
 def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'createapp'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:my-secret-pw@mysql-container:3306/user'
+    
+    db_user = os.environ.get('MYSQL_USER', 'root')
+    db_password = os.environ.get('MYSQL_PASSWORD', 'my-secret-pw')
+    db_host = os.environ.get('MYSQL_HOST', 'localhost')
+    db_name = os.environ.get('MYSQL_DATABASE', 'user')
+
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{db_user}:{db_password}@{db_host}/{db_name}'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
 
