@@ -1,0 +1,86 @@
+name: Build and Deploy to Minikube
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-image:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image
+        run: |
+          docker build -t my-flask-image:latest .
+
+      - name: Save Docker Image as Tar
+        run: |
+          docker save my-flask-image:latest -o my-flask-image.tar
+
+      - name: Upload Image Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: flask-image
+          path: my-flask-image.tar
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-image
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Minikube
+        run: |
+          curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          sudo install minikube-linux-amd64 /usr/local/bin/minikube
+          minikube version
+
+      - name: Start Minikube
+        run: |
+          minikube start --driver=docker
+          kubectl version --client
+          kubectl get nodes
+
+      - name: Download Docker Image
+        uses: actions/download-artifact@v4
+        with:
+          name: flask-image
+
+      - name: Load Docker Image into Minikube
+        run: |
+          minikube image load my-flask-image.tar
+
+      - name: Deploy MySQL to Minikube
+        run: |
+          kubectl apply -f mysqlapp.yaml
+
+      - name: Wait for MySQL Pod to be Ready
+        run: |
+          kubectl wait --for=condition=ready pod -l app=mysql --timeout=180s
+
+      - name: Deploy Flask App and Ingress to Minikube
+        run: |
+          kubectl apply -f flaskapp.yaml
+          kubectl apply -f flaskingress.yaml
+
+      - name: Wait for Flask Pod to be Ready
+        run: |
+          kubectl wait --for=condition=ready pod -l app=flaskapp --timeout=180s
+
+      - name: Show Logs for All Pods
+        run: |
+          kubectl get pods
+          for pod in $(kubectl get pods -o jsonpath='{.items[*].metadata.name}'); do
+            echo "=================== Logs for Pod: $pod ==================="
+            kubectl logs "$pod"
+            echo "========================================================="
+          done
