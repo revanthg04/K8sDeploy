@@ -61,7 +61,6 @@ jobs:
 
       - name: Deploy to Minikube
         run: |
-          kubectl apply -f flask-sql.yaml
           kubectl apply -f mysqlapp.yaml
           kubectl apply -f flaskapp.yaml
           kubectl apply -f flaskingress.yaml
