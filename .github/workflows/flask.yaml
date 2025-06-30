@@ -66,6 +66,9 @@ jobs:
       - name: Wait for MySQL Pod to be Ready
         run: |
           kubectl wait --for=condition=ready pod -l app=mysql --timeout=180s
+          
+      - name: Give MySQL Extra Time to Initialize
+        run: sleep 15
 
       - name: Deploy Flask App and Ingress to Minikube
         run: |
