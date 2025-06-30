@@ -10,7 +10,7 @@ def create_app():
 
     db_user = os.environ.get('MYSQL_USER', 'root')
     db_password = os.environ.get('MYSQL_PASSWORD', 'my-secret-pw')
-    db_host = os.environ.get('MYSQL_HOST', 'localhost')
+    db_host = os.environ.get('MYSQL_HOST', 'mysql-container')
     db_name = os.environ.get('MYSQL_DATABASE', 'user')
 
     app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{db_user}:{db_password}@{db_host}/{db_name}'
