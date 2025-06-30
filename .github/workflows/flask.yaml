@@ -3,7 +3,7 @@ name: Build and Deploy to Minikube
 on:
   push:
     branches:
-      - main
+      - working
 
 jobs:
   build-image:
@@ -59,16 +59,22 @@ jobs:
         run: |
           minikube image load my-flask-image.tar
 
-      - name: Deploy to Minikube
+      - name: Deploy MySQL to Minikube
         run: |
           kubectl apply -f mysqlapp.yaml
+
+      - name: Wait for MySQL Pod to be Ready
+        run: |
+          kubectl wait --for=condition=ready pod -l app=mysql --timeout=180s
+
+      - name: Deploy Flask App and Ingress to Minikube
+        run: |
           kubectl apply -f flaskapp.yaml
           kubectl apply -f flaskingress.yaml
 
-      - name: Wait for Pods to be Ready
+      - name: Wait for Flask Pod to be Ready
         run: |
-          kubectl wait --for=condition=ready pod -l app=flaskapp --timeout=120s
-          kubectl wait --for=condition=ready pod -l app=mysql --timeout=120s
+          kubectl wait --for=condition=ready pod -l app=flaskapp --timeout=180s
 
       - name: Show Logs for All Pods
         run: |
