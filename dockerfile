@@ -11,4 +11,4 @@ RUN chmod +x wait-for-mysql.sh
 
 EXPOSE 5000
 
-CMD ["python", "main.py"]
+CMD ["./wait-for-mysql.sh"]
